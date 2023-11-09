@@ -4,7 +4,7 @@ const SensorData = require("../models/sensordata");
 
 const sensordataHandler = async (req, res, next) => {
   
-  const { waterlevel, motorstatus } = req.body;
+  const {temperature,humidity, soilMoisture,climateCondition,soilMoistureLevel,voltage,current,waterQuantity,powerConsumption,motorStatus  } = req.body;
 
 
   
@@ -29,15 +29,31 @@ const sensordataHandler = async (req, res, next) => {
     const result = await SensorData.findOneAndUpdate(
       { _id: sensordata[0]._id },
       {
-        waterlevel: waterlevel,
-        motorstatus: motorstatus,
+        temperature: temperature,
+        humidity: humidity,
+        soilMoisture: soilMoisture,
+        climateCondition: climateCondition,
+        soilMoistureLevel: soilMoistureLevel,
+        voltage: voltage,
+        current: current,
+        waterQuantity: waterQuantity,
+        powerConsumption:  powerConsumption,
+        motorStatus: motorStatus,
       }
     );
   } else {
     try {
       const newSensorData = new SensorData({
-        waterlevel: waterlevel,
-        motorstatus: motorstatus,
+        temperature: temperature,
+        humidity: humidity,
+        soilMoisture: soilMoisture,
+        climateCondition: climateCondition,
+        soilMoistureLevel: soilMoistureLevel,
+        voltage: voltage,
+        current: current,
+        waterQuantity: waterQuantity,
+        powerConsumption:  powerConsumption,
+        motorStatus: motorStatus,
 
 
 
@@ -66,7 +82,7 @@ const getdataHandler = async (req, res, next) => {
   let sensordata, updatedAtnew;
   try {
     sensordata = await SensorData.find();
-    //console.log(sensordata);
+    console.log(sensordata);
   } catch (err) {
     console.log(err);
     return res.status(500).json({
@@ -80,8 +96,17 @@ const getdataHandler = async (req, res, next) => {
   }
 
   const data = {
-    waterlevel: sensordata[0].waterlevel,
-    motorstatus: sensordata[0].motorstatus,
+    temperature: sensordata[0].temperature,
+    humidity: sensordata[0].humidity,
+    soilMoisture: sensordata[0].soilMoisture,
+    climateCondition: sensordata[0].climateCondition,
+    soilMoistureLevel: sensordata[0].soilMoistureLevel,
+    voltage: sensordata[0].voltage,
+    current: sensordata[0].current,
+    waterQuantity: sensordata[0].waterQuantity,
+    powerConsumption: sensordata[0]. powerConsumption,
+    motorStatus: sensordata[0].motorStatus,
+
     
   }
   
