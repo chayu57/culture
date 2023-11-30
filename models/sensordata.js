@@ -6,6 +6,11 @@ const Schema = mongoose.Schema;
  
 const sensordataSchema = new Schema(
     {
+      date: {
+        type: Schema.Types.Date,
+        required: true,
+        default: Date.now,
+      },
       temperature: {
         type: Schema.Types.Number,
         required: true,

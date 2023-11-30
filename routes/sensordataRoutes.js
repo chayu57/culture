@@ -10,4 +10,7 @@ router.post("/sensordata",sensorDataController.sensordataHandler);
 
 router.get("/sensordata",sensorDataController.getdataHandler);
 
+router.get("/livesensordata",sensorDataController.livedataHandler);
+
+
 module.exports=router;

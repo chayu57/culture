@@ -6,82 +6,112 @@ const sensordataHandler = async (req, res, next) => {
   
   const {temperature,humidity, soilMoisture,climateCondition,soilMoistureLevel,voltage,current,waterQuantity,powerConsumption,motorStatus  } = req.body;
 
-
-  
-  
-
-  let exists = false;
-  let sensordata;
   try {
-    sensordata = await SensorData.find();
-    if (sensordata.length == 1) {
-      exists = true;
+    const currentDate = new Date();
+    const existingData = await SensorData.findOne({
+      date: {
+        $gte: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()),
+        $lt: new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1),
+      },
+    });
+
+    if (existingData) {
+      await SensorData.updateOne(
+        { _id: existingData._id },
+        {
+          temperature,
+          humidity,
+          soilMoisture,
+          climateCondition,
+          soilMoistureLevel,
+          voltage,
+          current,
+          waterQuantity,
+          powerConsumption,
+          motorStatus,
+        }
+      );
+    } else {
+      const newSensorData = new SensorData({
+        temperature,
+        humidity,
+        soilMoisture,
+        climateCondition,
+        soilMoistureLevel,
+        voltage,
+        current,
+        waterQuantity,
+        powerConsumption,
+        motorStatus,
+      });
+
+      await newSensorData.save();
     }
 
+    return res.status(200).json({
+      message: "Data stored or updated successfully",
+    });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return res.status(500).json({
-      message: "Updating Data Failed",
+      message: "Storing or Updating Data Failed",
     });
   }
-
-  if (exists) {
-    const result = await SensorData.findOneAndUpdate(
-      { _id: sensordata[0]._id },
-      {
-        temperature: temperature,
-        humidity: humidity,
-        soilMoisture: soilMoisture,
-        climateCondition: climateCondition,
-        soilMoistureLevel: soilMoistureLevel,
-        voltage: voltage,
-        current: current,
-        waterQuantity: waterQuantity,
-        powerConsumption:  powerConsumption,
-        motorStatus: motorStatus,
-      }
-    );
-  } else {
-    try {
-      const newSensorData = new SensorData({
-        temperature: temperature,
-        humidity: humidity,
-        soilMoisture: soilMoisture,
-        climateCondition: climateCondition,
-        soilMoistureLevel: soilMoistureLevel,
-        voltage: voltage,
-        current: current,
-        waterQuantity: waterQuantity,
-        powerConsumption:  powerConsumption,
-        motorStatus: motorStatus,
-
-
-
-      });
-      await newSensorData.save();
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json({
-        message: "Updating Data Failed",
-      });
-    }
-  }
-
-  return res.status(200).json({
-    message: "Data updated successfully",
-  });
 };
 
-const addHours = (numOfHours, date = new Date()) => {
-  date.setTime(date.getTime() + numOfHours * 60 * 60 * 1000);
 
-  return date;
-}
 
 const getdataHandler = async (req, res, next) => {
-  let sensordata, updatedAtnew;
   try {
-    sensordata = await SensorData.find();
+    const requestedDate = new Date(req.query.date);
+    console.log('Requested Date:', requestedDate.toISOString().split('T')[0]);
+
+    const startDate = new Date(requestedDate);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+
+    const sensordata = await SensorData.find({
+      date: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    });
+
+    console.log('Sensor Data:', sensordata);
+
+    if (sensordata.length === 0) {
+      return res.status(404).json({
+        message: "No data found for the requested date",
+      });
+    }
+
+    const data = {
+      temperature: sensordata[0].temperature,
+      humidity: sensordata[0].humidity,
+      soilMoisture: sensordata[0].soilMoisture,
+      climateCondition: sensordata[0].climateCondition,
+      soilMoistureLevel: sensordata[0].soilMoistureLevel,
+      voltage: sensordata[0].voltage,
+      current: sensordata[0].current,
+      waterQuantity: sensordata[0].waterQuantity,
+      powerConsumption: sensordata[0].powerConsumption,
+      motorStatus: sensordata[0].motorStatus,
+    };
+
+    return res.status(200).json(data);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      message: "Getting Data Failed",
+    });
+  }
+};
+
+
+const livedataHandler = async (req, res, next) => {
+  let sensordata;
+  try {
+    sensordata = await SensorData.find().sort({ createdAt: -1 });
     console.log(sensordata);
   } catch (err) {
     console.log(err);
@@ -89,12 +119,7 @@ const getdataHandler = async (req, res, next) => {
       message: "Getting Data Failed",
     });
   }
-  if (sensordata.length == 1) {
-    const updatedAtold = new Date(sensordata[0].updatedAt);
-    updatedAtnew = addHours(5.511, updatedAtold);
-    
-  }
-
+ 
   const data = {
     temperature: sensordata[0].temperature,
     humidity: sensordata[0].humidity,
@@ -113,5 +138,7 @@ const getdataHandler = async (req, res, next) => {
   return res.status(200).json(data);
 }
 
+
 exports.sensordataHandler = sensordataHandler;
 exports.getdataHandler = getdataHandler;
+exports.livedataHandler = livedataHandler
