@@ -28,7 +28,7 @@ const sensordataSchema = new Schema(
         required: true,
       },
       soilMoistureLevel: {
-        type: Schema.Types.Number,
+        type: Schema.Types.String,
         required: true,
       },
       voltage: {
